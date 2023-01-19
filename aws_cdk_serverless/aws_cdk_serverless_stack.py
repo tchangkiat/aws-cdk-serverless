@@ -17,33 +17,53 @@ class AwsCdkServerlessStack(Stack):
         # Lambda Functions
         # ------------------------------------
 
+        # Handles '/'
         fn_hello = _lambda.Function(self, "function_hello",
             runtime=_lambda.Runtime.PYTHON_3_9,
             code=_lambda.Code.from_asset('lambda_functions'),
             handler='hello.handler',
             function_name=app_name+'-hello',
         )
-        fn_products = _lambda.Function(self, "function_products",
+
+        # Handles '/products/v1'
+        fn_products_v1 = _lambda.Function(self, "function_products_v1",
             runtime=_lambda.Runtime.PYTHON_3_9,
             code=_lambda.Code.from_asset('lambda_functions'),
-            handler='products.handler',
-            function_name=app_name+'-products',
+            handler='products.v1',
+            function_name=app_name+'-products-v1',
+        )
+
+        # Handles '/products/v2'
+        fn_products_v2 = _lambda.Function(self, "function_products_v2",
+            runtime=_lambda.Runtime.PYTHON_3_9,
+            code=_lambda.Code.from_asset('lambda_functions'),
+            handler='products.v2',
+            function_name=app_name+'-products-v2',
         )
 
         # ------------------------------------
         # API Gateway
         # ------------------------------------
 
+        # Creates a REST API in API Gateway
         api = apigw.RestApi(
             self, 'api',
             rest_api_name=app_name,
         )
 
-        # Lambda Integration with 'Hello' function
+        # Lambda Integration for root
         integration_hello = apigw.LambdaIntegration(fn_hello)
         api.root.add_method("GET", integration_hello)
 
-        # Lambda Integration with 'Products' function
-        integration_products = apigw.LambdaIntegration(fn_products)
+        # Add resource for '/products'
         products = api.root.add_resource("products")
-        products.add_method("GET", integration_products)
+
+        # Lambda Integration for '/products/v1'
+        integration_products_v1 = apigw.LambdaIntegration(fn_products_v1)
+        products_v1 = products.add_resource("v1")
+        products_v1.add_method("GET", integration_products_v1)
+
+        # Lambda Integration for '/products/v2'
+        integration_products_v2 = apigw.LambdaIntegration(fn_products_v2)
+        products_v2 = products.add_resource("v2")
+        products_v2.add_method("GET", integration_products_v2)
