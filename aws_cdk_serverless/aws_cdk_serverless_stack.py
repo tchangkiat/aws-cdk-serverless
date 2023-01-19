@@ -3,6 +3,7 @@ from aws_cdk import (
     Stack,
     aws_lambda as _lambda,
     aws_apigateway as apigw,
+    aws_logs as logs,
 )
 from constructs import Construct
 
@@ -25,20 +26,12 @@ class AwsCdkServerlessStack(Stack):
             function_name=app_name+'-hello',
         )
 
-        # Handles '/products/v1'
-        fn_products_v1 = _lambda.Function(self, "function_products_v1",
+        # Handles '/products'
+        fn_products = _lambda.Function(self, "function_products",
             runtime=_lambda.Runtime.PYTHON_3_9,
             code=_lambda.Code.from_asset('lambda_functions'),
-            handler='products.v1',
-            function_name=app_name+'-products-v1',
-        )
-
-        # Handles '/products/v2'
-        fn_products_v2 = _lambda.Function(self, "function_products_v2",
-            runtime=_lambda.Runtime.PYTHON_3_9,
-            code=_lambda.Code.from_asset('lambda_functions'),
-            handler='products.v2',
-            function_name=app_name+'-products-v2',
+            handler='products.handler',
+            function_name=app_name+'-products',
         )
 
         # ------------------------------------
@@ -46,24 +39,32 @@ class AwsCdkServerlessStack(Stack):
         # ------------------------------------
 
         # Creates a REST API in API Gateway
+        apigw_logs = logs.LogGroup(self, "api_gateway_logs", log_group_name=app_name+"-api-gateway-logs", retention=logs.RetentionDays.THREE_DAYS)
         api = apigw.RestApi(
             self, 'api',
+            deploy_options=apigw.StageOptions(
+                access_log_destination=apigw.LogGroupLogDestination(apigw_logs),
+                access_log_format=apigw.AccessLogFormat.json_with_standard_fields(
+                    caller=False,
+                    http_method=True,
+                    ip=True,
+                    protocol=True,
+                    request_time=True,
+                    resource_path=True,
+                    response_length=True,
+                    status=True,
+                    user=True
+                ),
+                stage_name='v1'
+            ),
             rest_api_name=app_name,
         )
 
-        # Lambda Integration for root
+        # Lambda Integration for '/'
         integration_hello = apigw.LambdaIntegration(fn_hello)
         api.root.add_method("GET", integration_hello)
 
-        # Add resource for '/products'
+        # Lambda Integration for '/products'
+        integration_products = apigw.LambdaIntegration(fn_products)
         products = api.root.add_resource("products")
-
-        # Lambda Integration for '/products/v1'
-        integration_products_v1 = apigw.LambdaIntegration(fn_products_v1)
-        products_v1 = products.add_resource("v1")
-        products_v1.add_method("GET", integration_products_v1)
-
-        # Lambda Integration for '/products/v2'
-        integration_products_v2 = apigw.LambdaIntegration(fn_products_v2)
-        products_v2 = products.add_resource("v2")
-        products_v2.add_method("GET", integration_products_v2)
+        products.add_method("GET", integration_products)
