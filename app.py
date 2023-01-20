@@ -7,7 +7,7 @@ from stacks.serverless import ApiGatewayLambda
 
 
 app = cdk.App()
-ApiGatewayLambda(app, "cdk-serverless-app",
+ApiGatewayLambda(app, "cdk-api-gateway-lambda",
     env=cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION')),
 )
 
