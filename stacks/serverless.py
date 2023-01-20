@@ -1,5 +1,6 @@
 from aws_cdk import (
     Stack,
+    Environment,
     RemovalPolicy,
     aws_apigateway as apigw,
     aws_iam as iam,
@@ -10,7 +11,7 @@ from constructs import Construct
 
 class ApiGatewayLambda(Stack):
 
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, env: Environment, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         app_name='cdk-api-gateway-lambda'
@@ -54,7 +55,7 @@ class ApiGatewayLambda(Stack):
         # Creates a REST API in API Gateway
         api = apigw.RestApi(
             self, 'api',
-            cloud_watch_role=True,
+            # cloud_watch_role=True,
             deploy=False,
             rest_api_name=app_name,
         )
@@ -62,35 +63,35 @@ class ApiGatewayLambda(Stack):
         deployment_v1 = apigw.Deployment(self, "deployment_v1", api=api)
         deployment_v2 = apigw.Deployment(self, "deployment_v2", api=api)
 
-        logs_v1 = logs.LogGroup(self, "logs_v1", log_group_name=app_name+"-v1-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY, removal_policy=RemovalPolicy.DESTROY)
-        logs_v2 = logs.LogGroup(self, "logs_v2", log_group_name=app_name+"-v2-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY, removal_policy=RemovalPolicy.DESTROY)
+        # logs_v1 = logs.LogGroup(self, "logs_v1", log_group_name=app_name+"-v1-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY, removal_policy=RemovalPolicy.DESTROY)
+        # logs_v2 = logs.LogGroup(self, "logs_v2", log_group_name=app_name+"-v2-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY, removal_policy=RemovalPolicy.DESTROY)
 
-        log_format = apigw.AccessLogFormat.json_with_standard_fields(
-            caller=False,
-            http_method=True,
-            ip=True,
-            protocol=True,
-            request_time=True,
-            resource_path=True,
-            response_length=True,
-            status=True,
-            user=True
-        )
+        # log_format = apigw.AccessLogFormat.json_with_standard_fields(
+        #     caller=False,
+        #     http_method=True,
+        #     ip=True,
+        #     protocol=True,
+        #     request_time=True,
+        #     resource_path=True,
+        #     response_length=True,
+        #     status=True,
+        #     user=True
+        # )
 
         apigw.Stage(self, "stage_v1",
             deployment=deployment_v1,
-            access_log_destination=apigw.LogGroupLogDestination(logs_v1),
-            access_log_format=log_format,
-            logging_level=apigw.MethodLoggingLevel.INFO,
+            # access_log_destination=apigw.LogGroupLogDestination(logs_v1),
+            # access_log_format=log_format,
+            # logging_level=apigw.MethodLoggingLevel.INFO,
             stage_name='v1',
             variables=dict([("lambda", fn_hello.function_name)])
         )
 
         apigw.Stage(self, "stage_v2",
             deployment=deployment_v2,
-            access_log_destination=apigw.LogGroupLogDestination(logs_v2),
-            access_log_format=log_format,
-            logging_level=apigw.MethodLoggingLevel.INFO,
+            # access_log_destination=apigw.LogGroupLogDestination(logs_v2),
+            # access_log_format=log_format,
+            # logging_level=apigw.MethodLoggingLevel.INFO,
             stage_name='v2',
             variables=dict([("lambda", fn_hello_v2.function_name)])
         )
@@ -98,10 +99,10 @@ class ApiGatewayLambda(Stack):
         # Integration for '/'
         # The following solution is a workaround to leverage API Gateway Stages for versioning as CDK does not support the use of Stage Variables natively (https://github.com/aws/aws-cdk/issues/6143).
         # Lambda Integration is not used because CDK will try to add an IAM permission to the ARN automatically, and the permission will not be valid. Hence, a role is created with the permission to invoke Lambda functions for the API Gateway.
-        fn_hello_dynamic = _lambda.Function.from_function_arn(self, fn_hello.function_name + "-dynamic", "arn:aws:lambda:ap-southeast-1:409989946510:function:${stageVariables.lambda}")
+        fn_hello_placeholder = _lambda.Function.from_function_arn(self, fn_hello.function_name + "-dynamic", "arn:aws:lambda:" + env.region + ":" + env.account + ":function:${stageVariables.lambda}")
         credentials_role = iam.Role(self, "api-gateway-api-role", assumed_by=iam.ServicePrincipal("apigateway.amazonaws.com"))
         credentials_role.add_to_policy(iam.PolicyStatement(actions=["lambda:InvokeFunction"], resources=[fn_hello.function_arn, fn_hello_v2.function_arn], effect=iam.Effect.ALLOW))
-        integration_hello = apigw.AwsIntegration(proxy=True, service="lambda", path="2015-03-31/functions/" + fn_hello_dynamic.function_arn + "/invocations", options=apigw.IntegrationOptions(credentials_role=credentials_role))
+        integration_hello = apigw.AwsIntegration(proxy=True, service="lambda", path="2015-03-31/functions/" + fn_hello_placeholder.function_arn + "/invocations", options=apigw.IntegrationOptions(credentials_role=credentials_role))
         api.root.add_method("GET", integration_hello)
 
         # Lambda Integration for '/products'
