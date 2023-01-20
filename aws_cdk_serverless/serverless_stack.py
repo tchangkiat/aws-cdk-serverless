@@ -1,19 +1,17 @@
 from aws_cdk import (
-    # Duration,
     Stack,
     aws_apigateway as apigw,
-    aws_iam as iam,
     aws_lambda as _lambda,
     aws_logs as logs,
 )
 from constructs import Construct
 
-class AwsCdkServerlessStack(Stack):
+class ServerlessStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        app_name='app'
+        app_name='cdk-serverless-app'
 
         # ------------------------------------
         # Lambda Functions
