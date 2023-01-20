@@ -22,7 +22,7 @@ class ApiGatewayLambda(Stack):
             code=_lambda.Code.from_asset('lambda_functions'),
             function_name=app_name+'-hello',
             handler='hello.handler',
-            log_retention=logs.RetentionDays.THREE_DAYS,
+            log_retention=logs.RetentionDays.ONE_DAY,
             runtime=_lambda.Runtime.PYTHON_3_9,
         )
 
@@ -31,7 +31,7 @@ class ApiGatewayLambda(Stack):
             code=_lambda.Code.from_asset('lambda_functions'),
             function_name=app_name+'-products',
             handler='products.handler',
-            log_retention=logs.RetentionDays.THREE_DAYS,
+            log_retention=logs.RetentionDays.ONE_DAY,
             runtime=_lambda.Runtime.PYTHON_3_9,
         )
 
@@ -42,6 +42,7 @@ class ApiGatewayLambda(Stack):
         # Creates a REST API in API Gateway
         api = apigw.RestApi(
             self, 'api',
+            cloud_watch_role=True,
             deploy=False,
             rest_api_name=app_name,
         )
@@ -49,8 +50,8 @@ class ApiGatewayLambda(Stack):
         deployment_v1 = apigw.Deployment(self, "deployment_v1", api=api)
         deployment_v2 = apigw.Deployment(self, "deployment_v2", api=api)
 
-        logs_v1 = logs.LogGroup(self, "logs_v1", log_group_name=app_name+"-v1-api-gateway-logs", retention=logs.RetentionDays.THREE_DAYS)
-        logs_v2 = logs.LogGroup(self, "logs_v2", log_group_name=app_name+"-v2-api-gateway-logs", retention=logs.RetentionDays.THREE_DAYS)
+        logs_v1 = logs.LogGroup(self, "logs_v1", log_group_name=app_name+"-v1-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY)
+        logs_v2 = logs.LogGroup(self, "logs_v2", log_group_name=app_name+"-v2-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY)
 
         log_format = apigw.AccessLogFormat.json_with_standard_fields(
             caller=False,
