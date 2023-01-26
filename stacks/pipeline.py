@@ -4,7 +4,7 @@ from aws_cdk.pipelines import CodePipeline, CodePipelineSource, ShellStep
 from stacks.serverless import ApiGatewayLambda
 
 class Pipeline(cdk.Stack):
-    def __init__(self, scope: Construct, construct_id: str, env: cdk.Environment, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         pipeline = CodePipeline(self, "pipeline", 
@@ -17,10 +17,10 @@ class Pipeline(cdk.Stack):
                         )
                     )
 
-        pipeline.add_stage(ApiGatewayLambdaStage(self, "api-gateway-lambda-stage", env))
+        pipeline.add_stage(ApiGatewayLambdaStage(self, "api-gateway-lambda-stage"))
 
 class ApiGatewayLambdaStage(cdk.Stage):
-    def __init__(self, scope: Construct, construct_id: str, env:cdk.Environment, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        ApiGatewayLambda(self, "api-gateway-lambda-stack", env)
+        ApiGatewayLambda(self, "api-gateway-lambda-stack")
