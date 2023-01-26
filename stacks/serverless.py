@@ -1,6 +1,5 @@
 from aws_cdk import (
     Stack,
-    Environment,
     RemovalPolicy,
     aws_apigateway as apigw,
     aws_iam as iam,
