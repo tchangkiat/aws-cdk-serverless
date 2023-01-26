@@ -28,6 +28,7 @@ class ApiGatewayLambda(Stack):
             log_retention=logs.RetentionDays.ONE_DAY,
             runtime=_lambda.Runtime.PYTHON_3_9,
         )
+        # grant_invoke is required for API Gateway to invoke Lambda functions when using Stage Variables
         fn_hello.grant_invoke(iam.ServicePrincipal("apigateway.amazonaws.com"))
 
         fn_hello_v2 = _lambda.Function(self, "function_hello_v2",
@@ -37,6 +38,7 @@ class ApiGatewayLambda(Stack):
             log_retention=logs.RetentionDays.ONE_DAY,
             runtime=_lambda.Runtime.PYTHON_3_9,
         )
+        # grant_invoke is required for API Gateway to invoke Lambda functions when using Stage Variables
         fn_hello_v2.grant_invoke(iam.ServicePrincipal("apigateway.amazonaws.com"))
 
         # Handles '/products'
@@ -60,11 +62,8 @@ class ApiGatewayLambda(Stack):
             rest_api_name=app_name,
         )
 
-        deployment_v1 = apigw.Deployment(self, "deployment_v1", api=api)
-        deployment_v2 = apigw.Deployment(self, "deployment_v2", api=api)
-
-        # logs_v1 = logs.LogGroup(self, "logs_v1", log_group_name=app_name+"-v1-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY, removal_policy=RemovalPolicy.DESTROY)
-        # logs_v2 = logs.LogGroup(self, "logs_v2", log_group_name=app_name+"-v2-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY, removal_policy=RemovalPolicy.DESTROY)
+        # Creates a deployment in API Gateway
+        deployment = apigw.Deployment(self, "deployment", api=api)
 
         # log_format = apigw.AccessLogFormat.json_with_standard_fields(
         #     caller=False,
@@ -78,8 +77,10 @@ class ApiGatewayLambda(Stack):
         #     user=True
         # )
 
+        # Creates a Stage for v1
+        # logs_v1 = logs.LogGroup(self, "logs_v1", log_group_name=app_name+"-v1-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY, removal_policy=RemovalPolicy.DESTROY)
         apigw.Stage(self, "stage_v1",
-            deployment=deployment_v1,
+            deployment=deployment,
             # access_log_destination=apigw.LogGroupLogDestination(logs_v1),
             # access_log_format=log_format,
             # logging_level=apigw.MethodLoggingLevel.INFO,
@@ -87,8 +88,10 @@ class ApiGatewayLambda(Stack):
             variables=dict([("lambda", fn_hello.function_name)])
         )
 
+        # Creates a Stage for v2
+        # logs_v2 = logs.LogGroup(self, "logs_v2", log_group_name=app_name+"-v2-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY, removal_policy=RemovalPolicy.DESTROY)
         apigw.Stage(self, "stage_v2",
-            deployment=deployment_v2,
+            deployment=deployment,
             # access_log_destination=apigw.LogGroupLogDestination(logs_v2),
             # access_log_format=log_format,
             # logging_level=apigw.MethodLoggingLevel.INFO,
