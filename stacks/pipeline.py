@@ -1,11 +1,10 @@
 import aws_cdk as cdk
-import os
 from constructs import Construct
 from aws_cdk.pipelines import CodePipeline, CodePipelineSource, ShellStep
-from stacks.pipeline_app_stage import ApiGatewayLambdaStage
+from stacks.serverless import ApiGatewayLambda
 
 class Pipeline(cdk.Stack):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, env: cdk.Environment, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         pipeline = CodePipeline(self, "pipeline", 
@@ -18,5 +17,10 @@ class Pipeline(cdk.Stack):
                         )
                     )
 
-        pipeline.add_stage(ApiGatewayLambdaStage(self, "api-gateway-lambda-stage",
-            env=cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION'))))
+        pipeline.add_stage(ApiGatewayLambdaStage(self, "api-gateway-lambda-stage", env))
+
+class ApiGatewayLambdaStage(cdk.Stage):
+    def __init__(self, scope: Construct, construct_id: str, env:cdk.Environment, **kwargs) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+
+        ApiGatewayLambda(self, "api-gateway-lambda-stack", env)
