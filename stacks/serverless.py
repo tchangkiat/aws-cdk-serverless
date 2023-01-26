@@ -11,7 +11,7 @@ from constructs import Construct
 
 class ApiGatewayLambda(Stack):
 
-    def __init__(self, scope: Construct, construct_id: str, env: Environment, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         app_name='cdk-api-gateway-lambda'
@@ -95,6 +95,8 @@ class ApiGatewayLambda(Stack):
             stage_name='v2',
             variables=dict([("lambda", fn_hello_v2.function_name)])
         )
+
+        env = kwargs.get("env")
 
         # Integration for '/'
         # The following solution is a workaround to leverage API Gateway Stages for versioning as CDK does not support the use of Stage Variables natively (https://github.com/aws/aws-cdk/issues/6143).
