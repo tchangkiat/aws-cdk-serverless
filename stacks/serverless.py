@@ -130,15 +130,15 @@ class ApiGatewayLambda(Stack):
         apigw_metric_4xx_errors = api.metric_client_error(period=Duration.minutes(1), label="Client (4xx) Errors")
         apigw_metric_5xx_errors = api.metric_client_error(period=Duration.minutes(1), label="Server (5xx) Errors")
 
-        stage_v1_metric_requests = api.metric_count(period=Duration.minutes(1), label="v1 - Requests")
-        stage_v1_metric_latency = api.metric_latency(period=Duration.minutes(1), label="v1 - Latency")
-        stage_v1_metric_4xx_errors = api.metric_client_error(period=Duration.minutes(1), label="v1 - Client (4xx) Errors")
-        stage_v1_metric_5xx_errors = api.metric_client_error(period=Duration.minutes(1), label="v1 - Server (5xx) Errors")
+        stage_v1_metric_requests = stage_v1.metric_count(period=Duration.minutes(1), label="v1 - Requests")
+        stage_v1_metric_latency = stage_v1.metric_latency(period=Duration.minutes(1), label="v1 - Latency")
+        stage_v1_metric_4xx_errors = stage_v1.metric_client_error(period=Duration.minutes(1), label="v1 - Client (4xx) Errors")
+        stage_v1_metric_5xx_errors = stage_v1.metric_client_error(period=Duration.minutes(1), label="v1 - Server (5xx) Errors")
 
-        stage_v2_metric_requests = api.metric_count(period=Duration.minutes(1), label="v2 - Requests")
-        stage_v2_metric_latency = api.metric_latency(period=Duration.minutes(1), label="v2 - Latency")
-        stage_v2_metric_4xx_errors = api.metric_client_error(period=Duration.minutes(1), label="v2 - Client (4xx) Errors")
-        stage_v2_metric_5xx_errors = api.metric_client_error(period=Duration.minutes(1), label="v2 - Server (5xx) Errors")
+        stage_v2_metric_requests = stage_v2.metric_count(period=Duration.minutes(1), label="v2 - Requests")
+        stage_v2_metric_latency = stage_v2.metric_latency(period=Duration.minutes(1), label="v2 - Latency")
+        stage_v2_metric_4xx_errors = stage_v2.metric_client_error(period=Duration.minutes(1), label="v2 - Client (4xx) Errors")
+        stage_v2_metric_5xx_errors = stage_v2.metric_client_error(period=Duration.minutes(1), label="v2 - Server (5xx) Errors")
 
         cw_dashboard.add_widgets(
             cloudwatch.GraphWidget(left=[apigw_metric_requests], title="Requests"),
