@@ -1,7 +1,9 @@
 from aws_cdk import (
+    Duration,
     Stack,
     RemovalPolicy,
     aws_apigateway as apigw,
+    aws_cloudwatch as cloudwatch,
     aws_iam as iam,
     aws_lambda as _lambda,
     aws_logs as logs,
@@ -113,3 +115,24 @@ class ApiGatewayLambda(Stack):
         integration_products = apigw.LambdaIntegration(fn_products)
         products = api.root.add_resource("products")
         products.add_method("GET", integration_products)
+
+        # ------------------------------------
+        # CloudWatch Dashboard
+        # ------------------------------------
+
+        cw_dashboard = cloudwatch.Dashboard(self, "cw-dashboard",
+            dashboard_name=app_name,
+            start="-PT3H"
+        )
+
+        apigw_metric_requests = api.metric_count(period=Duration.minutes(1), label="Requests")
+        apigw_metric_latency = api.metric_latency(period=Duration.minutes(1), label="Latency")
+        apigw_metric_4xx_errors = api.metric_client_error(period=Duration.minutes(1), label="Client (4xx) Errors")
+        apigw_metric_5xx_errors = api.metric_client_error(period=Duration.minutes(1), label="Server (5xx) Errors")
+
+        cw_dashboard.add_widgets(
+            cloudwatch.GraphWidget(left=[apigw_metric_requests], title="Requests", width=12),
+            cloudwatch.GraphWidget(left=[apigw_metric_latency], title="Latency", width=12),
+            cloudwatch.GraphWidget(left=[apigw_metric_4xx_errors], title="Client (4xx) Errors", width=12),
+            cloudwatch.GraphWidget(left=[apigw_metric_5xx_errors], title="Server (5xx) Errors", width=12),
+        )
