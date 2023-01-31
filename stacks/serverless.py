@@ -86,6 +86,8 @@ class ApiGatewayLambda(Stack):
             # access_log_format=log_format,
             # logging_level=apigw.MethodLoggingLevel.INFO,
             stage_name='v1',
+            throttling_burst_limit=20,
+            throttling_rate_limit=100,
             variables=dict([("lambda", fn_hello.function_name)])
         )
 
@@ -97,6 +99,8 @@ class ApiGatewayLambda(Stack):
             # access_log_format=log_format,
             # logging_level=apigw.MethodLoggingLevel.INFO,
             stage_name='v2',
+            throttling_burst_limit=20,
+            throttling_rate_limit=100,
             variables=dict([("lambda", fn_hello_v2.function_name)])
         )
 
