@@ -80,7 +80,7 @@ class ApiGatewayLambda(Stack):
 
         # Creates a Stage for v1
         # logs_v1 = logs.LogGroup(self, "logs_v1", log_group_name=app_name+"-v1-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY, removal_policy=RemovalPolicy.DESTROY)
-        apigw.Stage(self, "stage_v1",
+        stage_v1 = apigw.Stage(self, "stage_v1",
             deployment=deployment,
             # access_log_destination=apigw.LogGroupLogDestination(logs_v1),
             # access_log_format=log_format,
@@ -91,7 +91,7 @@ class ApiGatewayLambda(Stack):
 
         # Creates a Stage for v2
         # logs_v2 = logs.LogGroup(self, "logs_v2", log_group_name=app_name+"-v2-api-gateway-logs", retention=logs.RetentionDays.ONE_DAY, removal_policy=RemovalPolicy.DESTROY)
-        apigw.Stage(self, "stage_v2",
+        stage_v2 = apigw.Stage(self, "stage_v2",
             deployment=deployment,
             # access_log_destination=apigw.LogGroupLogDestination(logs_v2),
             # access_log_format=log_format,
@@ -130,9 +130,29 @@ class ApiGatewayLambda(Stack):
         apigw_metric_4xx_errors = api.metric_client_error(period=Duration.minutes(1), label="Client (4xx) Errors")
         apigw_metric_5xx_errors = api.metric_client_error(period=Duration.minutes(1), label="Server (5xx) Errors")
 
+        stage_v1_metric_requests = api.metric_count(period=Duration.minutes(1), label="v1 - Requests")
+        stage_v1_metric_latency = api.metric_latency(period=Duration.minutes(1), label="v1 - Latency")
+        stage_v1_metric_4xx_errors = api.metric_client_error(period=Duration.minutes(1), label="v1 - Client (4xx) Errors")
+        stage_v1_metric_5xx_errors = api.metric_client_error(period=Duration.minutes(1), label="v1 - Server (5xx) Errors")
+
+        stage_v2_metric_requests = api.metric_count(period=Duration.minutes(1), label="v2 - Requests")
+        stage_v2_metric_latency = api.metric_latency(period=Duration.minutes(1), label="v2 - Latency")
+        stage_v2_metric_4xx_errors = api.metric_client_error(period=Duration.minutes(1), label="v2 - Client (4xx) Errors")
+        stage_v2_metric_5xx_errors = api.metric_client_error(period=Duration.minutes(1), label="v2 - Server (5xx) Errors")
+
         cw_dashboard.add_widgets(
-            cloudwatch.GraphWidget(left=[apigw_metric_requests], title="Requests", width=12),
-            cloudwatch.GraphWidget(left=[apigw_metric_latency], title="Latency", width=12),
-            cloudwatch.GraphWidget(left=[apigw_metric_4xx_errors], title="Client (4xx) Errors", width=12),
-            cloudwatch.GraphWidget(left=[apigw_metric_5xx_errors], title="Server (5xx) Errors", width=12),
+            cloudwatch.GraphWidget(left=[apigw_metric_requests], title="Requests"),
+            cloudwatch.GraphWidget(left=[apigw_metric_latency], title="Latency"),
+            cloudwatch.GraphWidget(left=[apigw_metric_4xx_errors], title="Client (4xx) Errors"),
+            cloudwatch.GraphWidget(left=[apigw_metric_5xx_errors], title="Server (5xx) Errors"),
+
+            cloudwatch.GraphWidget(left=[stage_v1_metric_requests], title="v1 - Requests"),
+            cloudwatch.GraphWidget(left=[stage_v1_metric_latency], title="v1 - Latency"),
+            cloudwatch.GraphWidget(left=[stage_v1_metric_4xx_errors], title="v1 - Client (4xx) Errors"),
+            cloudwatch.GraphWidget(left=[stage_v1_metric_5xx_errors], title="v1 - Server (5xx) Errors"),
+
+            cloudwatch.GraphWidget(left=[stage_v2_metric_requests], title="v2 - Requests"),
+            cloudwatch.GraphWidget(left=[stage_v2_metric_latency], title="v2 - Latency"),
+            cloudwatch.GraphWidget(left=[stage_v2_metric_4xx_errors], title="v2 - Client (4xx) Errors"),
+            cloudwatch.GraphWidget(left=[stage_v2_metric_5xx_errors], title="v2 - Server (5xx) Errors"),
         )
