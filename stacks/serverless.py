@@ -124,31 +124,36 @@ class ApiGatewayLambda(Stack):
         # CloudWatch Dashboard
         # ------------------------------------
 
+        # Creates a CloudWatch Dashboard
         cw_dashboard = cloudwatch.Dashboard(self, "cw-dashboard",
             dashboard_name=app_name,
             start="-PT3H"
         )
 
-        apigw_metric_requests = api.metric_count(period=Duration.minutes(1), label="Requests")
-        apigw_metric_latency = api.metric_latency(period=Duration.minutes(1), label="Latency")
-        apigw_metric_4xx_errors = api.metric_client_error(period=Duration.minutes(1), label="Client (4xx) Errors")
-        apigw_metric_5xx_errors = api.metric_client_error(period=Duration.minutes(1), label="Server (5xx) Errors")
+        # Defining metrics for the REST API created above
+        api_metric_requests = api.metric_count(period=Duration.minutes(1), label="Requests")
+        api_metric_latency = api.metric_latency(period=Duration.minutes(1), label="Latency")
+        api_metric_4xx_errors = api.metric_client_error(period=Duration.minutes(1), label="Client (4xx) Errors")
+        api_metric_5xx_errors = api.metric_client_error(period=Duration.minutes(1), label="Server (5xx) Errors")
 
+        # Defining metrics for the stage "v1"
         stage_v1_metric_requests = stage_v1.metric_count(period=Duration.minutes(1), label="v1 - Requests")
         stage_v1_metric_latency = stage_v1.metric_latency(period=Duration.minutes(1), label="v1 - Latency")
         stage_v1_metric_4xx_errors = stage_v1.metric_client_error(period=Duration.minutes(1), label="v1 - Client (4xx) Errors")
         stage_v1_metric_5xx_errors = stage_v1.metric_client_error(period=Duration.minutes(1), label="v1 - Server (5xx) Errors")
 
+        # Defining metrics for the stage "v2"
         stage_v2_metric_requests = stage_v2.metric_count(period=Duration.minutes(1), label="v2 - Requests")
         stage_v2_metric_latency = stage_v2.metric_latency(period=Duration.minutes(1), label="v2 - Latency")
         stage_v2_metric_4xx_errors = stage_v2.metric_client_error(period=Duration.minutes(1), label="v2 - Client (4xx) Errors")
         stage_v2_metric_5xx_errors = stage_v2.metric_client_error(period=Duration.minutes(1), label="v2 - Server (5xx) Errors")
 
+        # Create CloudWatch Dashboard Widgets for the metrics of the REST API, "v1" and "v2" stages
         cw_dashboard.add_widgets(
-            cloudwatch.GraphWidget(left=[apigw_metric_requests], title="Requests"),
-            cloudwatch.GraphWidget(left=[apigw_metric_latency], title="Latency"),
-            cloudwatch.GraphWidget(left=[apigw_metric_4xx_errors], title="Client (4xx) Errors"),
-            cloudwatch.GraphWidget(left=[apigw_metric_5xx_errors], title="Server (5xx) Errors"),
+            cloudwatch.GraphWidget(left=[api_metric_requests], title="Requests"),
+            cloudwatch.GraphWidget(left=[api_metric_latency], title="Latency"),
+            cloudwatch.GraphWidget(left=[api_metric_4xx_errors], title="Client (4xx) Errors"),
+            cloudwatch.GraphWidget(left=[api_metric_5xx_errors], title="Server (5xx) Errors"),
 
             cloudwatch.GraphWidget(left=[stage_v1_metric_requests], title="v1 - Requests"),
             cloudwatch.GraphWidget(left=[stage_v1_metric_latency], title="v1 - Latency"),
