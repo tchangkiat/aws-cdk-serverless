@@ -6,20 +6,6 @@ pipeline {
     }
   }
   stages {
-    stage('Install dependencies') {
-      steps {
-        sh 'node -v'
-        sh 'npm -v'
-        sh 'npm install'
-      }
-    }
-
-    stage('Build dependencies') {
-      steps {
-        sh 'npm run build'
-      }
-    }
-
     stage('CDK bootstrap') {
       steps {
         sh 'npx cdk bootstrap'
