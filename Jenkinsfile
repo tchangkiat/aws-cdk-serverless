@@ -8,10 +8,8 @@ pipeline {
   stages {
     stage('Install dependencies') {
       steps {
-        sh 'npm cache clean --force'
         sh 'node -v'
         sh 'npm -v'
-        sh 'npm install -g aws-cdk'
         sh 'npm install'
       }
     }
@@ -24,19 +22,19 @@ pipeline {
 
     stage('CDK bootstrap') {
       steps {
-        sh 'cdk bootstrap'
+        sh 'npx cdk bootstrap'
       }
     }
 
     stage('CDK synth') {
       steps {
-        sh 'cdk synth'
+        sh 'npx cdk synth'
       }
     }
 
     stage('CDK deploy') {
       steps {
-        sh 'cdk deploy --require-approval=never'
+        sh 'npx cdk deploy --require-approval=never'
       }
     }
   }
