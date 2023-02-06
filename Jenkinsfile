@@ -8,7 +8,8 @@ pipeline {
   stages {
     stage('Install dependencies') {
       steps {
-        sh 'sudo chown -R 995:993 "/.npm"'
+        sh 'node -v'
+        sh 'npm -v'
         sh 'npm install -g aws-cdk'
         sh 'npm install'
       }
