@@ -6,13 +6,6 @@ pipeline {
     }
   }
   stages {
-    stage('Clone source code') {
-      steps {
-        sh 'git -v'
-        sh 'git clone https://github.com/tchangkiat/aws-cdk-serverless.git'
-      }
-    }
-    
     stage('Install dependencies') {
       steps {
         sh 'node -v'
