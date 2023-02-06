@@ -8,6 +8,7 @@ pipeline {
   stages {
     stage('Install dependencies') {
       steps {
+        sh 'export npm_config_cache=/path/to/cache'
         sh 'node -v'
         sh 'npm -v'
         sh 'npm install -g aws-cdk'
