@@ -1,21 +1,35 @@
 pipeline {
   agent any
   stages {
-    stage('Synthesize') {
-      agent any
+    stage('Install dependencies') {
       steps {
-        sh '''npm ci
-npm install -g aws-cdk
-cdk synth'''
+        sh 'npm install -g aws-cdk'
+        sh 'npm install'
       }
     }
 
-    stage('Deploy') {
-      agent any
+    stage('Build dependencies') {
       steps {
-        sh 'cdk deploy'
+        sh 'npm run build'
       }
     }
 
+    stage('CDK bootstrap') {
+      steps {
+        sh 'cdk bootstrap'
+      }
+    }
+
+    stage('CDK synth') {
+      steps {
+        sh 'cdk synth'
+      }
+    }
+
+    stage('CDK deploy') {
+      steps {
+        sh 'cdk deploy --require-approval=never'
+      }
+    }
   }
 }
